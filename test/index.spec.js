@@ -53,7 +53,7 @@ app2.use((req, res, next) => {
 app2.use(login({db, options:{...options, jwtKeyFile:resolve(__dirname, 'jwtKey.txt')}}))
 app2.use('/', (req, res) => res.send(req.user))
 
-var lastMediaType = 0
+const lastMediaType = 0
 const aMediaType = () => {
 	return (['text/html', 'application/json', 'application/xml'])[++lastMediaType%3]
 }
@@ -103,7 +103,7 @@ describe('http authentication service', () => {
 			.then(res => expect(res).redirectTo(options.publicDeactivatedUri))
 	)
 	it('updates last login stamp, one time within defined time frame', () => {
-		var firstStamp
+		const firstStamp
 		return correctPasswordRequest().then(({body}) => {
 			firstStamp = body.last_login
 		}, error)
@@ -117,7 +117,7 @@ describe('http authentication service', () => {
 			}, error))
 	})
 	it('redirects to change password page (including a back-uri), on first request of new user', () => {
-		var uri = '/xyz/?foo=bar'
+		const uri = '/xyz/?foo=bar'
 		return chai.request(app).get(uri).redirects(0).auth('adam', 'tempPw').then(
 			res => expect(res)
 				.redirectTo(options.changePasswordUri)
@@ -125,7 +125,7 @@ describe('http authentication service', () => {
 		)
 	})
 	it('redirects to change password page (including a back-uri), if password is expired', () => {
-		var uri = '/foo/?bar=xyz'
+		const uri = '/foo/?bar=xyz'
 		return chai.request(app).get(uri).redirects(0).auth('ben', 'test').then(
 			res => expect(res)
 				.redirectTo(options.changePasswordUri)

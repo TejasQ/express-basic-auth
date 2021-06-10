@@ -1,61 +1,63 @@
-'use strict'
-const basicAuth = require('basic-auth'),
-	knexAuth = require('@pubcore/knex-auth'),
-	getUser = knexAuth.default,
-	{comparePassword} = knexAuth,
-	authenticate = require('@pubcore/authentication').default,
-	gofer = require('./gofer/authenticateGofer').default,
-	{readFile} = require('fs'),
-	authenticateOptions = { //all time values in [ms]
-		maxTimeWithoutActivity: 1000 * 60 * 60 * 24 * 180,
-		maxLoginAttempts:5,
-		maxLoginAttemptsTimeWindow:1000 * 60 * 60 * 24,
-	},
-	httpOptions = {
-		changePasswordUri:'/login/pwChange',
-		publicDeactivatedUri:'/login/deactivated',
-		publicCancelLoginUri:'/login/canceled',
-	},
-	loadSecret = file => new Promise((resolve, reject) => readFile(
-		file,
-		{encoding:'utf8'},
-		(err, data) => err ? reject(err) : resolve(data.trim())
-	))
-
-var jwtKey = ''
-
-exports.default = ({db, options}) => (...args) => {
-	var [req, res, next] = args,
-		{name, pass} = basicAuth(req) || {},
-		{cookies, cookiesByArray} = req,
-		{Jwt} = cookies || {},
-		jwtList = (cookiesByArray||{})['Jwt']
-
-	return authenticate({
-		jwt:Jwt,
-		jwtList,
-		username:name,
-		password:pass,
-		gofer:gofer({
-			db, req, res, options:{...httpOptions, ...options}
-		}),
-		carrier: {
-			getOptions: () => Promise.resolve(
-				options.jwtKeyFile && !jwtKey && loadSecret(options.jwtKeyFile)
-					.then(data => jwtKey = data, err => Promise.reject(err))
-			).then(() => ({...authenticateOptions, ...options, jwtKey})),
-			getUser:({username}) => getUser(
-				{...db, cols:['first_name', 'last_name', 'email']}, {username}
-			)
-		},
-		lib:{comparePassword}
-	}).then(user => {
-		if(user){
-			var {username, email, first_name, last_name, last_login, oldPwUsed} = user
-			req.user = {
-				username, email, first_name, last_name, last_login, oldPwUsed
-			}
-		}
-		next()
-	}).catch(next)
-}
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.basicAuth = void 0;
+const fs_1 = require("fs");
+const basic_auth_1 = __importDefault(require("basic-auth"));
+const authenticate = require("@pubcore/authentication").default;
+const gofer = require("./gofer/authenticateGofer").default;
+const knexAuth = require("@pubcore/knex-auth");
+const getUser = knexAuth.default;
+const { comparePassword } = knexAuth;
+const defaultAuthenticateOptions = {
+    maxTimeWithoutActivity: 1000 * 60 * 60 * 24 * 180,
+    maxLoginAttempts: 5,
+    maxLoginAttemptsTimeWindow: 1000 * 60 * 60 * 24,
+};
+const httpOptions = {
+    changePasswordUri: "/login/pwChange",
+    publicDeactivatedUri: "/login/deactivated",
+    publicCancelLoginUri: "/login/canceled",
+};
+const loadSecret = (pathToFile) => new Promise((resolve, reject) => fs_1.readFile(pathToFile, { encoding: "utf8" }, (err, data) => (err ? reject(err) : resolve(data.trim()))));
+const basicAuth = ({ db, options }) => async (req, res, next) => {
+    try {
+        const { name, pass } = basic_auth_1.default(req) || {};
+        const { cookies } = req;
+        const { Jwt } = cookies || {};
+        const jwtList = (cookies || {})["Jwt"];
+        const user = await authenticate({
+            jwt: Jwt,
+            jwtList,
+            username: name,
+            password: pass,
+            gofer: gofer({
+                db,
+                req,
+                res,
+                options: { ...httpOptions, ...options },
+            }),
+            carrier: {
+                getOptions: async () => {
+                    return {
+                        ...defaultAuthenticateOptions,
+                        ...options,
+                        jwtKey: options.jwtKeyFile ? await loadSecret(options.jwtKeyFile) : "",
+                    };
+                },
+                getUser: ({ username }) => getUser({ ...db, cols: ["first_name", "last_name", "email"] }, { username }),
+            },
+            lib: { comparePassword },
+        });
+        if (typeof user !== "undefined") {
+            req.user = user;
+        }
+        next();
+    }
+    catch (e) {
+        next(e);
+    }
+};
+exports.basicAuth = basicAuth;
