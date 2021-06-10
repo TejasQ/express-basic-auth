@@ -22,7 +22,7 @@ const loadSecret = (pathToFile: string): Promise<string> =>
 export type MainOptions = {
   db: Knex;
   options?: {
-    comparePassword?: (password: string) => Promise<boolean>;
+    comparePassword?: (password: string, hash: string) => Promise<boolean>;
     jwtKeyFile?: string;
     publicDeactivatedUri?: string;
     changePasswordUri?: string;
