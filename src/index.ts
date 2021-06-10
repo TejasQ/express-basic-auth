@@ -21,7 +21,7 @@ const loadSecret = (pathToFile: string): Promise<string> =>
 
 export type MainOptions = {
   db: Knex;
-  options: {
+  options?: {
     comparePassword?: (password: string) => Promise<boolean>;
     jwtKeyFile?: string;
     publicDeactivatedUri?: string;
@@ -65,13 +65,13 @@ export const basicAuth =
             return {
               ...defaultAuthenticateOptions,
               ...options,
-              jwtKey: options.jwtKeyFile ? await loadSecret(options.jwtKeyFile) : "",
+              jwtKey: options?.jwtKeyFile ? await loadSecret(options.jwtKeyFile) : "",
             };
           },
           getUser: ({ username }: { username: string }) =>
             getUser({ ...db, cols: ["first_name", "last_name", "email"] }, { username }),
         },
-        lib: { comparePassword: options.comparePassword || comparePassword },
+        lib: { comparePassword: options?.comparePassword ?? comparePassword },
       });
 
       if (typeof user !== "undefined") {
