@@ -19,7 +19,7 @@ export const authenticateGofer = ({ db, res, req, options }: Options) => {
     publicDeactivatedUri = "/deactivated",
     changePasswordUri = "/reset-password",
     publicCancelLoginUri = "/cancel",
-  } = options;
+  } = options ?? {};
 
   return {
     noCredentials: () => http401({ publicCancelLoginUri, res }),
