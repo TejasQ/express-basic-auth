@@ -7,7 +7,7 @@
   "main": "js/index.js",
   "license": "MIT",
   "name": "@tejaskumar/express-basic-auth",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "express middleware to perform http basic authentication",
   "repository": {
     "type": "git",
