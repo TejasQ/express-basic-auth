@@ -2,9 +2,9 @@ import Knex from "knex";
 import { readFile } from "fs";
 import defaultBasicAuth from "basic-auth";
 import { Handler } from "express";
+import { authenticateGofer } from "./gofer/authenticateGofer";
 
 const authenticate = require("@pubcore/authentication").default;
-const gofer = require("./gofer/authenticateGofer").default;
 const knexAuth = require("@pubcore/knex-auth");
 const getUser = knexAuth.default;
 
@@ -54,7 +54,7 @@ export const basicAuth =
         jwtList,
         username: name,
         password: pass,
-        gofer: gofer({
+        gofer: authenticateGofer({
           db,
           req,
           res,
