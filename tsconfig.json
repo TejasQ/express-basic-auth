@@ -42,8 +42,8 @@
     // "maxNodeModuleJsDepth": 1,                        /* The maximum dependency depth to search under node_modules and load JavaScript files. */
 
     /* Emit */
-    // "declaration": true,                              /* Generates corresponding '.d.ts' file. */
-    // "declarationMap": true,                           /* Generates a sourcemap for each corresponding '.d.ts' file. */
+    "declaration": true,                              /* Generates corresponding '.d.ts' file. */
+    "declarationMap": true,                           /* Generates a sourcemap for each corresponding '.d.ts' file. */
     // "emitDeclarationOnly": true,                      /* Only emit '.d.ts' declaration files. */
     // "sourceMap": true,                                /* Generates corresponding '.map' file. */
     // "outFile": "./",                                  /* Concatenate and emit output to single file. */
