@@ -9,11 +9,6 @@ const knexAuth = require("@pubcore/knex-auth");
 const getUser = knexAuth.default;
 
 const { comparePassword } = knexAuth;
-const defaultAuthenticateOptions = {
-  maxTimeWithoutActivity: 1000 * 60 * 60 * 24 * 180,
-  maxLoginAttempts: 5,
-  maxLoginAttemptsTimeWindow: 1000 * 60 * 60 * 24,
-};
 const httpOptions = {
   changePasswordUri: "/login/pwChange",
   publicDeactivatedUri: "/login/deactivated",
@@ -27,11 +22,16 @@ const loadSecret = (pathToFile: string): Promise<string> =>
 export type MainOptions = {
   db: Knex;
   options: {
-    comparePassword: (password: string) => Promise<boolean>;
-    jwtKeyFile: string;
-    publicDeactivatedUri: string;
-    changePasswordUri: string;
-    publicCancelLoginUri: string;
+    comparePassword?: (password: string) => Promise<boolean>;
+    jwtKeyFile?: string;
+    publicDeactivatedUri?: string;
+    changePasswordUri?: string;
+    publicCancelLoginUri?: string;
+    /** Max time (in milliseconds) between logins before an account is deactivated */
+    maxTimeWithoutActivity?: number;
+    maxLoginAttempts?: number;
+    /** In milliseconds */
+    maxLoginAttemptsTimeWindow?: number;
   };
 };
 
@@ -43,6 +43,11 @@ export const basicAuth =
       const { cookies } = req;
       const { Jwt } = cookies || {};
       const jwtList = (cookies || {})["Jwt"];
+      const defaultAuthenticateOptions: Partial<MainOptions["options"]> = {
+        maxTimeWithoutActivity: Infinity,
+        maxLoginAttempts: 5,
+        maxLoginAttemptsTimeWindow: 1000 * 60 * 60 * 24,
+      };
 
       const user: User = await authenticate({
         jwt: Jwt,
